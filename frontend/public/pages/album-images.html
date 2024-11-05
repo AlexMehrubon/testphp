@@ -1,0 +1,62 @@
+<div class="container" id="albumImage">
+    <div class="d-flex flex-column ">
+        <div class="d-flex flex-row mb-3">
+            <h4 class="me-4">Фотографии</h4>
+        </div>
+
+        <div class="row" id="image">
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function setAlbumId(id) {
+        let albumId = id;
+
+        checkAuthentication(albumId);
+        loadImages(albumId);
+    }
+
+    function checkAuthentication(albumId) {
+        fetch('http://localhost:8000/api/auth/check', {method: 'GET', credentials: 'include'})
+            .then(response => response.json())
+            .then(data => {
+                if (!data.authenticated) {
+                    window.location.href = 'http://localhost:8001';
+                } else {
+                    loadModals(albumId);
+                    loadUserAlbums(data.user.id);
+                }
+            })
+            .catch(error => console.error('Authentication Error:', error));
+    }
+
+    function loadImages(albumId) {
+        $.ajax({
+            url: `http://localhost:8000/api/albums/${albumId}/images`,
+            type: 'GET',
+            contentType: 'application/json',
+            xhrFields: {withCredentials: true},
+            success: function (response) {
+                response.message.forEach(function (image) {
+                    $.get('components/image-card.html', function (dataCard) {
+                        let imageCard = $(dataCard);
+                        imageCard.find(' #img').attr('src', `http://localhost:8000/api/uploads/${image.id}`);
+                        imageCard.find('#title').text(`Название: ${image.title}`);
+                        imageCard.find('#description').text(`Описание: ${image.description}`);
+
+
+                        let col = $('<div class="col-6 col-md-3 mb-3"></div>');
+                        col.append(imageCard);
+                        $('#image').append(col);
+                    });
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Album Loading Error:', status, error);
+                console.log(xhr);
+            }
+        });
+    }
+</script>

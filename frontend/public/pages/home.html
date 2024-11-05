@@ -1,0 +1,64 @@
+<div class="container">
+    <div class="d-flex flex-column ">
+        <div class="d-flex flex-row mb-3">
+            <h4 class="me-4">Все альбомы</h4>
+
+        </div>
+
+        <div class="row" id="album">
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        loadUserAlbums();
+    });
+
+
+    function loadUserAlbums() {
+        $.ajax({
+            url: `http://localhost:8000/api/albums`,
+            type: 'GET',
+            contentType: 'application/json',
+            xhrFields: {withCredentials: true},
+            success: function (response) {
+                $('#album').empty();
+                response.message.forEach(album => {
+                    loadAlbumCard(album);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Album Loading Error:', status, error);
+            }
+        });
+    }
+
+    function loadAlbumCard(album) {
+        $.get('components/album-card.html', function (dataCard) {
+            const albumCard = $(dataCard).addClass('col-3 mb-4').attr('id', `album-${album.id}`);
+            albumCard.find('.card-title').text(`Название: ${album.title}`);
+            albumCard.find('.card-text').text(`Описание: ${album.description}`);
+
+            albumCard.on('click', function() {
+                loadPage('album-images.html', album.id);
+            });
+
+            getUserInfoById(album.user_id).then(userData => {
+                albumCard.find('.card-subtitle').text(`Владелец: ${userData.name}`);
+            }).catch(error => console.error('User Info Error:', error));
+
+            $('#album').append(albumCard);
+        });
+    }
+
+    function getUserInfoById(userId) {
+        return $.ajax({
+            url: `http://localhost:8000/api/users?user_id=${userId}`,
+            type: 'GET',
+            contentType: 'application/json',
+            xhrFields: {withCredentials: true}
+        }).then(response => response.message);
+    }
+</script>

@@ -1,0 +1,173 @@
+<div class="container">
+    <div class="d-flex flex-column ">
+        <div class="d-flex flex-row mb-3">
+            <h4 class="me-4">Мои альбомы</h4>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createAlbumModal">
+                Добавить альбом
+            </button>
+        </div>
+
+        <div class="row" id="album">
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        checkAuthentication();
+    });
+
+    function checkAuthentication() {
+        fetch('http://localhost:8000/api/auth/check', { method: 'GET', credentials: 'include' })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.authenticated) {
+                    window.location.href = 'http://localhost:8001';
+                } else {
+                    loadModals();
+                    loadUserAlbums(data.user.id);
+                }
+            })
+            .catch(error => console.error('Authentication Error:', error));
+    }
+
+    function loadModals() {
+        $.get('components/modal-create-album.html', function(data) {
+            $('body').append(data);
+        });
+    }
+
+    function loadUserAlbums(userId) {
+        $.ajax({
+            url: `http://localhost:8000/api/albums?user_id=${userId}`,
+            type: 'GET',
+            contentType: 'application/json',
+            xhrFields: { withCredentials: true },
+            success: function(response) {
+                $('#album').empty();
+                response.message.forEach(album => {
+                    loadAlbumCard(album);
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('Album Loading Error:', status, error);
+            }
+        });
+    }
+
+    function loadAlbumCard(album) {
+        $.get('components/album-card.html', function(dataCard) {
+            const albumCard = $(dataCard).addClass('col-4 mb-4').attr('id', `album-${album.id}`);
+            albumCard.find('.card-title').text(`Название: ${album.title}`);
+            albumCard.find('.card-text').text(`Описание: ${album.description}`);
+
+            albumCard.on('click', function() {
+                loadPage('my-album-images.html', album.id);
+            });
+
+            getUserInfoById(album.user_id).then(userData => {
+                albumCard.find('.card-subtitle').text(`Владелец: ${userData.name}`);
+                addButtonsContainer(albumCard, album.id, album.title, album.description);
+            }).catch(error => console.error('User Info Error:', error));
+
+            $('#album').append(albumCard);
+        });
+    }
+
+    function addButtonsContainer(albumCard, albumId, title, description) {
+        const buttonsContainer = $('<div class="d-flex gap-2"></div>');
+
+        $.get('components/buttons/delete-button.html', function(dataDeleteButton) {
+            const deleteButton = $(dataDeleteButton).attr('data-album-id', albumId);
+            buttonsContainer.append(deleteButton);
+        });
+
+
+        $.get('components/buttons/edit-button.html', function(dataEditButton) {
+            const editButton = $(dataEditButton).attr('data-album-id', albumId);
+            const modalId = `updateAlbumModal-${albumId}`;
+            editButton.attr('data-bs-toggle', 'modal').attr('data-bs-target', `#${modalId}`);
+
+            $.get('components/modal-update-album.html', function(dataUpdateModal) {
+                const updateModal = $(dataUpdateModal).attr('id', modalId);
+
+                updateModal.on('show.bs.modal', function () {
+                    updateModal.find('#title').val(title);
+                    updateModal.find('#description').val(description);
+                    updateModal.find('#updateAlbumForm').off('submit').on('submit', function(event) {
+                        event.preventDefault();
+                        updateAlbum(albumId, updateModal);
+                    });
+                });
+                $('body').append(updateModal);
+            });
+            buttonsContainer.append(editButton);
+        });
+
+        albumCard.find('.card-body').append(buttonsContainer);
+    }
+
+    function updateAlbum(albumId, updateModal) {
+        const formData = {
+            title: updateModal.find('#title').val(),
+            description: updateModal.find('#description').val(),
+        };
+
+        if (!formData.title || !formData.description) {
+            alert("Title and description cannot be empty.");
+            return;
+        }
+
+        $.ajax({
+            url: `http://localhost:8000/api/albums/${albumId}`,
+            type: 'PUT',
+            data: JSON.stringify(formData),
+            contentType: 'application/json',
+            xhrFields: {
+                withCredentials: true
+            },
+            success: function(response) {
+                if (response.status === 'failed') {
+                    console.log(response);
+                    alert(response.message);
+                } else {
+                    updateModal.modal('hide');
+                    location.reload()
+
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', status, error);
+                console.log('Server response:', xhr.responseText);
+            }
+        });
+    }
+
+    function getUserInfoById(userId) {
+        return $.ajax({
+            url: `http://localhost:8000/api/users?user_id=${userId}`,
+            type: 'GET',
+            contentType: 'application/json',
+            xhrFields: {withCredentials: true}
+        }).then(response => response.message);
+    }
+
+    $(document).on('click', '.btn-danger', function () {
+        const albumId = $(this).attr('data-album-id');
+
+
+        $.ajax({
+            url: `http://localhost:8000/api/albums/${albumId}`,
+            type: 'DELETE',
+            contentType: 'application/json',
+            xhrFields: { withCredentials: true }
+        })
+            .then(data => {
+                location.reload()
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to delete album.');
+            });
+    });
+</script>

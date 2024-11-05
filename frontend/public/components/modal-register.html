@@ -1,0 +1,70 @@
+<div id="registerModal" class="modal fade" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registerModalLabel">Регистарция</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="registerForm">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Ваш логин</label>
+                        <input type="text" class="form-control" id="name" aria-describedby="emailHelp">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input type="password" class="form-control" id="password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password_confirmation" class="form-label">Подвердите пароль</label>
+                        <input type="password" class="form-control" id="password_confirmation">
+                    </div>
+                    <div class="d-flex  flex-column align-items-center">
+                        <button type="submit" id="registerSubmit" class="btn btn-primary">Зарегистрироваться</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $('#registerForm').on('submit',function(event){
+            event.preventDefault()
+            let formData = {
+                name: $('#name').val(),
+                password: $('#password').val(),
+                password_confirmation: $('#password_confirmation').val()
+            };
+
+
+            $.ajax({
+                url: 'http://localhost:8000/api/register',
+                type: 'POST',
+                data: JSON.stringify(formData),
+                contentType: 'application/json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function(response) {
+                    if (response.status === 'failed'){
+                        alert(response.message)
+                    }
+                    else
+                        location.reload()
+                },
+                error: function(xhr, status, error) {
+                    console.error('Ошибка:', status, error);
+                    console.log('Ответ сервера:', xhr.responseText);
+                }
+            })
+        })
+    });
+</script>
+
+
+
+

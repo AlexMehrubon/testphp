@@ -1,0 +1,30 @@
+<div id="logoutButton" class="d-flex flex-row justify-content-center align-items-center">
+    <div id="userName" class=" text-center text-wrap me-4"></div>
+    <button type="button" class="btn btn-outline-dark me-4 order-0">Выйти
+    </button>
+</div>
+
+
+
+<script>
+    $(document).ready(function (){
+        $('#logoutButton').click(function (){
+            fetch('http://localhost:8000/api/logout', {
+                method: 'POST',
+                credentials: 'include'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+
+                    if (data.status === 'success') {
+
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                });
+        });
+    });
+</script>
