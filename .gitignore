@@ -1,0 +1,8 @@
+.idea/
+backend/vendor
+frontend/vendor
+backend/uploads
+*.tmp
+*.log
+node_modules/
+.env
