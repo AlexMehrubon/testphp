@@ -30,8 +30,8 @@
     $('#loginForm').on('submit',function(event){
       event.preventDefault()
       let formData = {
-        name: $('#name').val(),
-        password: $('#password').val(),
+        name: $('#loginModal #name').val(),
+        password: $('#loginModal #password').val(),
       };
 
 
@@ -40,9 +40,7 @@
         type: 'POST',
         data: JSON.stringify(formData),
         contentType: 'application/json',
-        xhrFields: {
-          withCredentials: true
-        },
+        xhrFields: {withCredentials: true},
         success: function(response) {
           if (response.status === "success"){
             location.reload()
@@ -52,6 +50,7 @@
 
         },
         error: function(xhr, status, error) {
+          alert(xhr.responseText)
           console.error('Ошибка:', status, error);
           console.log('Ответ сервера:', xhr.responseText);
         }

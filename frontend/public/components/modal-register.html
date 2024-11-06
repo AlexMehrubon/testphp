@@ -2,7 +2,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="registerModalLabel">Регистарция</h5>
+                <h5 class="modal-title" id="registerModalLabel">Регистрация</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
@@ -35,9 +35,9 @@
         $('#registerForm').on('submit',function(event){
             event.preventDefault()
             let formData = {
-                name: $('#name').val(),
-                password: $('#password').val(),
-                password_confirmation: $('#password_confirmation').val()
+                name: $('#registerModal #name').val(),
+                password: $('#registerModal #password').val(),
+                password_confirmation: $('#registerModal #password_confirmation').val()
             };
 
 
@@ -46,9 +46,7 @@
                 type: 'POST',
                 data: JSON.stringify(formData),
                 contentType: 'application/json',
-                xhrFields: {
-                    withCredentials: true
-                },
+                xhrFields: {withCredentials: true},
                 success: function(response) {
                     if (response.status === 'failed'){
                         alert(response.message)
@@ -57,6 +55,7 @@
                         location.reload()
                 },
                 error: function(xhr, status, error) {
+                    alert(xhr.responseText)
                     console.error('Ошибка:', status, error);
                     console.log('Ответ сервера:', xhr.responseText);
                 }
