@@ -4,18 +4,15 @@ $host = 'mysql';
 $user = 'album';
 $password = 'pass';
 $dbname = 'album_db';
-$pdo = null;
+
 try {
     $pdo = new PDO("mysql:host=$host", $user, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
 
     $pdo->exec("CREATE DATABASE IF NOT EXISTS $dbname");
     echo "База данных '$dbname' успешно создана или уже существует.\n";
     $pdo->exec("USE $dbname");
 
-
-    $pdo->beginTransaction();
     $sql = "
         CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -59,12 +56,8 @@ try {
     ";
 
     $pdo->exec($sql);
-    $pdo->commit();
     echo "Таблицы успешно созданы.\n";
 
 } catch (PDOException $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
     echo "Ошибка: " . $e->getMessage() . "\n";
 }
