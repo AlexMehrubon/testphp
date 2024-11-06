@@ -46,5 +46,7 @@ RUN wget https://phar.phpunit.de/phpunit.phar \
     && chmod +x phpunit.phar \
     && mv phpunit.phar /usr/local/bin/phpunit
 
+
+
 # Установка php-fpm как команды по умолчанию
 CMD ["php-fpm"]

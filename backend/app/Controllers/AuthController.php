@@ -52,18 +52,19 @@ class AuthController
             $password = $request['jsonData']['password'];
             $password_confirmation = $request['jsonData']['password_confirmation'];
 
-            if ($password !== $password_confirmation) {
+            if ($password !== $password_confirmation)
                 return $this->errorResponse('Passwords do not match', 400);
-            }
 
-            if ($this->userRepository->getByName($name)) {
+
+            if ($this->userRepository->getByName($name))
                 return $this->errorResponse('Username already taken', 409);
-            }
+
 
             $user = new User($name, $password);
-            if (!$this->userRepository->create($user)) {
+            if (!$this->userRepository->create($user))
                 return $this->errorResponse('Server error', 500);
-            }
+            $userDB = $this->userRepository->getByName($name);
+            $user->id = $userDB['id'];
 
             $this->setUserSession($user);
             return json_encode(['status' => 'success', 'user' => $_SESSION['user']]);

@@ -22,12 +22,10 @@
         fetch('http://localhost:8000/api/auth/check', {method: 'GET', credentials: 'include'})
             .then(response => response.json())
             .then(data => {
-                if (!data.authenticated) {
-                    window.location.href = 'http://localhost:8001';
-                } else {
+
                     loadModals(albumId);
                     loadUserAlbums(data.user.id);
-                }
+
             })
             .catch(error => console.error('Authentication Error:', error));
     }

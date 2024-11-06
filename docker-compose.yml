@@ -21,6 +21,7 @@ services:
     volumes:
        - ./backend:/var/www/src
        - ./backend/uploads:/var/www/src/uploads
+    entrypoint: /bin/sh -c "chown -R www-data:www-data /var/www/src/uploads && chmod -R 775 /var/www/src/uploads && php-fpm"
   mysql:
     image: mysql:5.7
     environment:
